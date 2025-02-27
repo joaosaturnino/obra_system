@@ -51,4 +51,53 @@ tr:hover {
     background-color: #f5bb3e;
 }
 
-   
+   /* Estilo do Chat */
+#chat {
+    height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+}
+
+.mensagem {
+    margin-bottom: 10px;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.mensagem strong {
+    color: #333;
+}
+
+.mensagem small {
+    display: block;
+    color: #777;
+    font-size: 0.8em;
+}
+
+/* Formulário de Envio de Mensagem */
+#form-mensagem textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    resize: none;
+}
+
+#form-mensagem button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+#form-mensagem button:hover {
+    background-color: #555;
+}

@@ -1,24 +1,30 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
-}
 include 'includes/db_connect.php';
-include 'includes/header.php';
+include 'includes/functions.php';
 
+verificarLogin(); // Verifica se o usuário está logado
+
+// Enviar mensagem
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $mensagem = $_POST['mensagem'];
+    $mensagem = sanitizarEntrada($_POST['mensagem']);
     $usuario_id = $_SESSION['user_id'];
 
-    $stmt = $pdo->prepare('INSERT INTO compartilhamentos (mensagem, usuario_id) VALUES (?, ?)');
-    if ($stmt->execute([$mensagem, $usuario_id])) {
-        echo "<p>Mensagem compartilhada com sucesso!</p>";
-    } else {
-        echo "<p>Erro ao compartilhar a mensagem.</p>";
+    if (!empty($mensagem)) {
+        $stmt = $pdo->prepare('INSERT INTO mensagens (usuario_id, mensagem) VALUES (?, ?)');
+        $stmt->execute([$usuario_id, $mensagem]);
     }
 }
 
-$compartilhamentos = $pdo->query('SELECT compartilhamentos.mensagem, usuarios.nome FROM compartilhamentos JOIN usuarios ON compartilhamentos.usuario_id = usuarios.id ORDER BY compartilhamentos.data_compartilhamento DESC')->fetchAll();
+// Buscar mensagens
+$mensagens = $pdo->query('
+    SELECT mensagens.mensagem, usuarios.nome, mensagens.data_envio
+    FROM mensagens
+    JOIN usuarios ON mensagens.usuario_id = usuarios.id
+    ORDER BY mensagens.data_envio ASC
+')->fetchAll();
+
+include 'includes/header.php';
 ?>
 
 <!DOCTYPE html>
@@ -26,25 +32,44 @@ $compartilhamentos = $pdo->query('SELECT compartilhamentos.mensagem, usuarios.no
 <head>
     <meta charset="UTF-8">
     <title>Compartilhamento</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/styles1.css">
 </head>
 <body>
-    <h1>Compartilhamento de Informações</h1>
-    <form method="POST">
+    <h1>Chat de Compartilhamento</h1>
+
+    <!-- Área de Mensagens -->
+    <div id="chat">
+        <?php foreach ($mensagens as $msg): ?>
+            <div class="mensagem">
+                <strong><?php echo $msg['nome']; ?>:</strong>
+                <span><?php echo $msg['mensagem']; ?></span>
+                <small><?php echo date('d/m/Y H:i', strtotime($msg['data_envio'])); ?></small>
+            </div>
+        <?php endforeach; ?>
+    </div>
+
+    <!-- Formulário de Envio de Mensagem -->
+    <form id="form-mensagem" method="POST">
         <textarea name="mensagem" placeholder="Digite sua mensagem..." required></textarea>
-        <button type="submit">Compartilhar</button>
+        <button type="submit">Enviar</button>
     </form>
 
-    <h2>Mensagens Compartilhadas</h2>
-    <ul>
-        <?php foreach ($compartilhamentos as $compartilhamento): ?>
-            <li><strong><?php echo $compartilhamento['nome']; ?>:</strong> <?php echo $compartilhamento['mensagem']; ?></li>
-        <?php endforeach; ?>
-    </ul>
+    <!-- Script para atualizar o chat em tempo real -->
+    <script>
+        function atualizarChat() {
+            fetch('buscar_mensagens.php')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('chat').innerHTML = data;
+                });
+        }
 
-    <div style="text-align: center; margin-top: 20px;">
-    <a href="index.php" class="btn-voltar">Voltar à Página Inicial</a>
-</div>
+        // Atualiza o chat a cada 2 segundos
+        setInterval(atualizarChat, 2000);
+
+        // Rola a tela para baixo ao carregar novas mensagens
+        document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
+    </script>
 </body>
 </html>
 
