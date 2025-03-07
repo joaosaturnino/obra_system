@@ -70,6 +70,8 @@ include 'includes/header.php';
         // Rola a tela para baixo ao carregar novas mensagens
         document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
     </script>
+    <div style="text-align: center; margin-top: 20px;">
+    <a href="index.php" class="btn-voltar">Voltar à Página Inicial</a>
 </body>
 </html>
 
